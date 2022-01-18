@@ -13,8 +13,8 @@ def _spring_settings(front_weight, rear_weight):
     front_spring = (spring_multi * front_weight)
     rear_spring = (spring_multi * rear_weight) \
                   * (1.25 if front_weight_pct >= 45 else 1.3)
-    if rear_spring >= total_weight //2:
-        rear_spring = total_weight//2
+    if rear_spring >= total_weight // 2:
+        rear_spring = total_weight // 2
     return (front_spring, rear_spring), spring_multi
 
 
@@ -40,20 +40,22 @@ def _diff_settings(spring_multi):
 
 
 def calc_suspension():
+    categories = "ARB", "Spring", "Damper", "Differential"
     front_weight, rear_weight = _weight_distribution()
     spring_settings, spring_multi = _spring_settings(front_weight, rear_weight)
     arb_settings = _arb_settings(spring_multi)
     damper_settings = _damper_settings(spring_multi)
     diff_settings = _diff_settings(spring_multi),
-    suspension_values = arb_settings, spring_settings, damper_settings, diff_settings
-    return '\n'.join([str([round(x, 1) for i in suspension_values for x in i])])
+    items = (arb_settings, spring_settings, damper_settings, diff_settings)
+    suspension_values = *map(lambda c, v: {c: v}, categories, items),
+    return suspension_values
 
 
 if __name__ == '__main__':
     spring_constant: float = 2.8875
     total_weight = 3237
     front_weight_pct = 44 * .01
-    front_height =3
+    front_height = 3
     rear_height = 2.7
     suspension_settings = calc_suspension()
     print(suspension_settings)
