@@ -30,7 +30,7 @@ class Suspension(object):
     rebound_max = 20
     bump_max = 20
     terrain_types = [
-        "cross_country",
+        "cross country",
         "dirt",
         "road",
         "snow",
@@ -64,15 +64,15 @@ class Suspension(object):
         rear_rebound = self.rebound_max * (spring_rear / total_weight)
         front_bump = front_rebound * 0.5
         rear_bump = rear_rebound * 0.7
-        return front_rebound, front_bump, rear_rebound, rear_bump
+        return front_rebound, rear_rebound, front_bump, rear_bump
 
     def stiffness(self, total_weight, terrain_type):
         assert terrain_type in self.terrain_types
         weight_class = vehicle_weight_class(total_weight)
-        if terrain_type == "cross_country":
-            if 2 < weight_class:
+        if terrain_type == "cross country":
+            if weight_class > 2:
                 weight_class = weight_class - 2
-            else:
+            elif weight_class == 2:
                 weight_class = weight_class - 1
         elif terrain_type in {"dirt", "snow"}:
             if 2 <= weight_class < 3:
@@ -101,6 +101,7 @@ def weight_distribution(vehicle_weight, weight_percent_front):
     rear_weight = vehicle_weight - front_weight
     return front_weight, rear_weight
 
+
 def spring_settings(stiffness_rating, vehicle_weight, weight_percent_front, height, is_rear: bool = False):
     weight_percent = weight_percent_front
     if is_rear:
@@ -108,14 +109,14 @@ def spring_settings(stiffness_rating, vehicle_weight, weight_percent_front, heig
         stiffness_rating = stiffness_rating[1]
     else:
         stiffness_rating = stiffness_rating[0]
-    spring_stiffness = lambda h: (stiffness_rating / h) / 2
+    # spring_stiffness = lambda h: (stiffness_rating / h) / 2
     spring_rate = (vehicle_weight * weight_percent) * stiffness_rating
     return spring_rate
 
 
 def arb_settings(total_weight, spring_rate, is_rear: bool = False):
-    arb_value = 32.5 * (spring_rate / total_weight)
-    return arb_value * 1.15 if is_rear else arb_value
+    arb_value = (65 / spring_rate) * 68
+    return arb_value * 1.2 if is_rear else arb_value # 20% increase in rear sway for enhanced cornering
 
 
 def diff_settings(weight_percent_front, spring_multi):
