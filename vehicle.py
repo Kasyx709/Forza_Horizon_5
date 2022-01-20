@@ -26,7 +26,7 @@ class Vehicle(object):
     def __init__(self, vehicle_name, vehicle_year, vehicle_weight, front_height, rear_height, front_wt_pct,
                  drivetrain,
                  terrain_type):
-        self.vehicle_year, self.vehicle_name, self.vehicle_type = vehicle_class(vehicle_name, vehicle_year)
+        self.vehicle_year, self.vehicle_model, self.vehicle_type = vehicle_class(vehicle_name, vehicle_year)
         self.vehicle_weight: int = vehicle_weight
         self.height_front: float = front_height
         self.height_rear: float = rear_height
@@ -56,10 +56,13 @@ def vehicle_class(vehicle_name, vehicle_year):
     cars.dropna(axis=1, how='all', inplace=True)
     cars.dropna(axis=0, how='all', inplace=True)
     cars.reset_index(drop=True, inplace=True)
-    cars = cars[cars["Make"].str.lower().isin([vehicle_name.lower()])]
+    cars = cars[cars["Model"].str.lower().isin([vehicle_name.lower()])]
     cars = cars[cars["Year"].isin([vehicle_year])]
-    cars.set_index(["Year", "Make", "Car Type"], inplace=True, drop=True)
-    return cars.index[0]
+    cars.set_index(["Year", "Model", "Car Type"], inplace=True, drop=True)
+    if not cars.empty:
+        return cars.index[0]
+    else:
+        return vehicle_year, vehicle_name, None
 
 
 if __name__ == '__main__':
