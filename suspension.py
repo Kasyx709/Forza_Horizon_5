@@ -18,6 +18,7 @@ class Suspension(object):
         "dirt",
         "road",
         "snow",
+        "race"
     ]
     stiffness_range = {
         1: (1.5, 2.0),  # Rally Cars
@@ -58,7 +59,7 @@ class Suspension(object):
             elif weight_class == 2:
                 weight_class = weight_class - 1
         elif terrain_type in {"dirt", "snow"}:
-            if 2 <= weight_class < 3:
+            if 2 <= weight_class <= 3:
                 weight_class = weight_class - 1
             elif weight_class == 4:
                 weight_class = weight_class - 2
@@ -87,6 +88,7 @@ def weight_distribution(vehicle_weight, weight_percent_front):
 
 def spring_settings(stiffness_rating, vehicle_weight,
                     weight_percent_front,
+                    terrain_type,
                     is_rear: bool = False):
     """
     Calculates Spring Rate using natural frequency values
@@ -125,20 +127,18 @@ def spring_settings(stiffness_rating, vehicle_weight,
     axle_weight_kg = (vehicle_weight * lb_to_kg_conversion * weight_percent)
     spring_rate = 4 * pi ** 2 * stiffness ** 2 * axle_weight_kg / motion_ratio ** 2
     spring_rate_lb_in = spring_rate * nm_to_nmm_conversion * nmm_to_lbin_conversion
+    if terrain_type in {"dirt", "snow"}:
+        spring_rate_lb_in = spring_rate_lb_in * .65
+    if terrain_type == "race":
+        if vehicle_weight <= 2500:
+            spring_rate_lb_in = spring_rate_lb_in * 2
+        elif 2500 < vehicle_weight <= 3500:
+            spring_rate_lb_in = spring_rate_lb_in * 1.35
     return spring_rate_lb_in
 
 
-def arb_settings(drivetrain, weight_percent_front, spring_rate, is_rear: bool = False):
-    arb_value = (spring_rate / (65 * weight_percent_front))
-    if is_rear:
-        if drivetrain == "fwd":
-            arb_value = arb_value * 1.3
-        elif drivetrain == "rwd":
-            arb_value = arb_value * 1.15
-        elif drivetrain == "awd":
-            arb_value = arb_value * 1.25
-    else:
-        arb_value = arb_value * 1.15
+def arb_settings(spring_rate):
+    arb_value = spring_rate / 32.5
     return arb_value
 
 
@@ -154,21 +154,20 @@ def calc_suspension(vehicle, drivetrain, terrain_type):
     stiffness = suspension.stiffness(vehicle_weight, terrain_type)
     spring_front, spring_rear = \
         suspension.spring_front, suspension.spring_rear = \
-        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front), \
-        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front, is_rear=True)
+        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front, terrain_type), \
+        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front, terrain_type, is_rear=True)
     rebound_front, rebound_rear, bump_front, bump_rear = \
         suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear = \
         suspension.damper_settings(spring_front, spring_rear, vehicle_weight)
-    arb_front = suspension.arb_front = arb_settings(drivetrain, vehicle.weight_percent_front, suspension.spring_front)
-    arb_rear = suspension.arb_rear = arb_settings(drivetrain, vehicle.weight_percent_front, suspension.spring_rear,
-                                                  is_rear=True)
-    if drivetrain == "rwd":
+    arb_front = suspension.arb_front = arb_settings(spring_front)
+    arb_rear = suspension.arb_rear = arb_settings(spring_rear)
+    if drivetrain in {"awd", "rwd"}:
         suspension.spring_front = spring_rear
         suspension.spring_rear = spring_front
         suspension.arb_front = arb_rear
         suspension.arb_rear = arb_front
         suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear \
-            = rebound_rear,  rebound_front, bump_rear,bump_front
+            = rebound_rear, rebound_front, bump_rear, bump_front
     return suspension
 
 

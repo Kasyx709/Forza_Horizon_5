@@ -14,12 +14,12 @@ def build_vehicle(v_name, v_yr, v_wt, f_h, r_ht, f_wt_pct, dtrain, t_type):
 if __name__ == '__main__':
     vehicle_name = "Superlight R500"
     vehicle_year = 2015
-    vehicle_weight = 3228
-    front_height = 4.2
-    rear_height = 5
+    vehicle_weight = 4120
+    front_height = 4.1
+    rear_height = 4
     front_wt_pct = 55
-    drivetrain = "rwd"
-    terrain_type = "road"
+    drivetrain = "awd"
+    terrain_type = "race"
     vehicle = build_vehicle(
         vehicle_name,
         vehicle_year,
