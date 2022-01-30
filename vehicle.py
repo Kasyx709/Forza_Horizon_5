@@ -23,10 +23,10 @@ class Vehicle(object):
         'Vans & Utility', 'Vintage Racers'
     ]
 
-    def __init__(self, vehicle_name, vehicle_year, vehicle_weight, front_height, rear_height, front_wt_pct,
+    def __init__(self, vehicle_make_model, vehicle_year, vehicle_weight, front_height, rear_height, front_wt_pct,
                  drivetrain,
                  terrain_type):
-        self.vehicle_year, self.vehicle_model, self.vehicle_type = vehicle_class(vehicle_name, vehicle_year)
+        self.vehicle_year, self.vehicle_make, self.vehicle_model, self.vehicle_type = vehicle_class(vehicle_make_model, vehicle_year)
         self.vehicle_weight: int = vehicle_weight
         self.height_front: float = front_height
         self.height_rear: float = rear_height
@@ -45,10 +45,12 @@ class Vehicle(object):
             print(k, self.__getattribute__(k))
 
 
-def vehicle_class(vehicle_name, vehicle_year):
+def vehicle_class(vehicle_make_model, vehicle_year):
     sheet_id = '1yucDOQ2nRaCcC4y4unl72Um7N_pQXuaI6gZqzf0Tl3M'
     sheet_name = 'Cars'
     car_data = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+
+    vehicle_make, vehicle_model = vehicle_make_model
     cars = pd.read_csv(car_data)
     cars = cars[cars.columns[3:]]
     cars.rename({cars.columns[0]: "Year", cars.columns[1]: "Make", cars.columns[2]: "Model", }, axis='columns',
@@ -56,13 +58,14 @@ def vehicle_class(vehicle_name, vehicle_year):
     cars.dropna(axis=1, how='all', inplace=True)
     cars.dropna(axis=0, how='all', inplace=True)
     cars.reset_index(drop=True, inplace=True)
-    cars = cars[cars["Model"].str.lower().isin([vehicle_name.lower()])]
     cars = cars[cars["Year"].isin([vehicle_year])]
-    cars.set_index(["Year", "Model", "Car Type"], inplace=True, drop=True)
+    cars = cars[cars["Model"].str.lower().isin([vehicle_model.lower()])]
+    cars = cars[cars["Make"].str.lower().isin([vehicle_make.lower()])]
+    cars.set_index(["Year", "Make", "Model", "Car Type"], inplace=True, drop=True)
     if not cars.empty:
         return cars.index[0]
     else:
-        return vehicle_year, vehicle_name, None
+        return vehicle_year, vehicle_make, vehicle_model, None
 
 
 if __name__ == '__main__':

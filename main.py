@@ -7,21 +7,21 @@
 from vehicle import Vehicle
 
 
-def build_vehicle(v_name, v_yr, v_wt, f_h, r_ht, f_wt_pct, dtrain, t_type):
-    return Vehicle(v_name, v_yr, v_wt, f_h, r_ht, f_wt_pct, dtrain, t_type)
+def build_vehicle(v_mk_mdl, v_yr, v_wt, f_h, r_ht, f_wt_pct, dtrain, t_type):
+    return Vehicle(v_mk_mdl, v_yr, v_wt, f_h, r_ht, f_wt_pct, dtrain, t_type)
 
 
 if __name__ == '__main__':
-    vehicle_name = "Superlight R500"
-    vehicle_year = 2015
-    vehicle_weight = 4120
-    front_height = 4.1
-    rear_height = 4
-    front_wt_pct = 55
+    vehicle_make_model = "Zenvo", "TS1"
+    vehicle_year = 2016
+    vehicle_weight = 3228
+    front_height = 3.7
+    rear_height = 3.2
+    front_wt_pct = 46
     drivetrain = "awd"
     terrain_type = "race"
     vehicle = build_vehicle(
-        vehicle_name,
+        vehicle_make_model,
         vehicle_year,
         vehicle_weight,
         front_height, rear_height,

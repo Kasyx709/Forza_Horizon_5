@@ -63,6 +63,9 @@ class Suspension(object):
                 weight_class = weight_class - 1
             elif weight_class == 4:
                 weight_class = weight_class - 2
+        '''elif terrain_type == "race":
+            if weight_class <= 2:
+                weight_class = 3'''
         stiffness = self.stiffness_range[weight_class]
         return stiffness
 
@@ -105,6 +108,7 @@ def spring_settings(stiffness_rating, vehicle_weight,
     2.5-3.5Hz Moderate downforce racecars with up to 50% total weight in max downforce capability
     3.5-5.0+Hz High downforce racecars with more than 50% of their weight in max downforce
 
+    :param terrain_type: Target terrain type for vehicle
     :param stiffness_rating:
     :param vehicle_weight: Assumed as lbs and converted to kg
     :param weight_percent_front: percentage of vehicles weight over axle
@@ -129,11 +133,13 @@ def spring_settings(stiffness_rating, vehicle_weight,
     spring_rate_lb_in = spring_rate * nm_to_nmm_conversion * nmm_to_lbin_conversion
     if terrain_type in {"dirt", "snow"}:
         spring_rate_lb_in = spring_rate_lb_in * .65
-    if terrain_type == "race":
+    elif terrain_type == "race":
         if vehicle_weight <= 2500:
             spring_rate_lb_in = spring_rate_lb_in * 2
         elif 2500 < vehicle_weight <= 3500:
             spring_rate_lb_in = spring_rate_lb_in * 1.35
+        elif 3500 < vehicle_weight:
+            spring_rate_lb_in = spring_rate_lb_in * 1.2
     return spring_rate_lb_in
 
 
@@ -145,6 +151,17 @@ def arb_settings(spring_rate):
 def diff_settings(weight_percent_front, spring_multi):
     diff_setting = (100 / weight_percent_front) * spring_multi
     return diff_setting if diff_setting <= 100 else 100
+
+
+def terrain_modifiers(terrain_type, drivetrain, value):
+    """
+
+    :param terrain_type:
+    :param drivetrain:
+    :param value:
+    :return:
+    """
+    return value
 
 
 def calc_suspension(vehicle, drivetrain, terrain_type):
@@ -161,13 +178,17 @@ def calc_suspension(vehicle, drivetrain, terrain_type):
         suspension.damper_settings(spring_front, spring_rear, vehicle_weight)
     arb_front = suspension.arb_front = arb_settings(spring_front)
     arb_rear = suspension.arb_rear = arb_settings(spring_rear)
-    if drivetrain in {"awd", "rwd"}:
+    if drivetrain == "rwd":
         suspension.spring_front = spring_rear
         suspension.spring_rear = spring_front
         suspension.arb_front = arb_rear
         suspension.arb_rear = arb_front
         suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear \
             = rebound_rear, rebound_front, bump_rear, bump_front
+    elif drivetrain == "awd":
+        suspension.arb_front = arb_rear
+        suspension.arb_rear = arb_front
+
     return suspension
 
 
