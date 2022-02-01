@@ -24,15 +24,16 @@ class Vehicle(object):
     ]
 
     def __init__(self, vehicle_make_model, vehicle_year, vehicle_weight, front_height, rear_height, front_wt_pct,
-                 drivetrain,
-                 terrain_type):
-        self.vehicle_year, self.vehicle_make, self.vehicle_model, self.vehicle_type = vehicle_class(vehicle_make_model, vehicle_year)
+                 engine_location, drivetrain, terrain_type):
+        self.vehicle_year, self.vehicle_make, self.vehicle_model, self.vehicle_type = vehicle_class(vehicle_make_model,
+                                                                                                    vehicle_year)
         self.vehicle_weight: int = vehicle_weight
         self.height_front: float = front_height
         self.height_rear: float = rear_height
         self.weight_percent_front: float = front_wt_pct * 0.01
+        self.engine_location: str = engine_location
         self.drivetrain: str = drivetrain
-        suspension_settings = calc_suspension(self, drivetrain, terrain_type)
+        suspension_settings = calc_suspension(self, engine_location, drivetrain, terrain_type)
         for k in suspension_settings.__dict__:
             if not k == 'vehicle':
                 v = suspension_settings.__getattribute__(k)

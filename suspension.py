@@ -164,7 +164,7 @@ def terrain_modifiers(terrain_type, drivetrain, value):
     return value
 
 
-def calc_suspension(vehicle, drivetrain, terrain_type):
+def calc_suspension(vehicle, engine_location, drivetrain, terrain_type):
     vehicle_type = vehicle.vehicle_type
     vehicle_weight = vehicle.vehicle_weight
     suspension = Suspension()
@@ -178,17 +178,15 @@ def calc_suspension(vehicle, drivetrain, terrain_type):
         suspension.damper_settings(spring_front, spring_rear, vehicle_weight)
     arb_front = suspension.arb_front = arb_settings(spring_front)
     arb_rear = suspension.arb_rear = arb_settings(spring_rear)
-    if drivetrain == "rwd":
-        suspension.spring_front = spring_rear
-        suspension.spring_rear = spring_front
+    print(drivetrain, engine_location)
+    if drivetrain in {"rwd", "awd"}:
         suspension.arb_front = arb_rear
         suspension.arb_rear = arb_front
-        suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear \
-            = rebound_rear, rebound_front, bump_rear, bump_front
-    elif drivetrain == "awd":
-        suspension.arb_front = arb_rear
-        suspension.arb_rear = arb_front
-
+        if drivetrain == "rwd":
+            suspension.spring_front = spring_rear
+            suspension.spring_rear = spring_front
+            suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear \
+                = rebound_rear, rebound_front, bump_rear, bump_front
     return suspension
 
 
