@@ -14,7 +14,7 @@ class Suspension(object):
     rebound_max = 40
     bump_max = 40
     terrain_types = [
-        "cross country",
+        "cross-country",
         "dirt",
         "road",
         "snow",
@@ -53,7 +53,7 @@ class Suspension(object):
     def stiffness(self, total_weight, terrain_type):
         assert terrain_type in self.terrain_types
         weight_class = vehicle_weight_class(total_weight)
-        if terrain_type == "cross country":
+        if terrain_type == "cross-country":
             if weight_class > 2:
                 weight_class = weight_class - 2
             elif weight_class == 2:

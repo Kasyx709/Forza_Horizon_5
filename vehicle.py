@@ -8,9 +8,6 @@
 from suspension import calc_suspension
 import pandas as pd
 
-pd.set_option('max_rows', 1000)
-
-
 class Vehicle(object):
     car_types = [
         'Buggies', 'Classic Muscle', 'Classic Racers', 'Classic Rally', 'Classic Sports Cars', 'Cult Cars',
