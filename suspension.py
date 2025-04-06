@@ -6,43 +6,36 @@
 """
 
 from math import pi
+from typing import Dict, Set
+from pydantic import BaseModel
 
 spring_constant: float = 2.8875
 
 
 class Suspension(object):
-    rebound_max = 40
-    bump_max = 40
-    terrain_types = [
-        "cross-country",
-        "dirt",
-        "road",
-        "snow",
-        "race"
-    ]
-    stiffness_range = {
+    arb_front: float
+    arb_rear: float
+    spring_front: float
+    spring_rear: float
+    rebound_front: float
+    rebound_rear: float
+    bump_front: float
+    bump_rear: float
+    rebound_max: int = 40
+    bump_max: int = 40
+    stiffness_range: Dict = {
         1: (1.5, 2.0),  # Rally Cars
         2: (1.5, 2.5),  # Non-Aero racecars, moderate downforce Formula cars
         3: (2.5, 3.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
         4: (3.5, 5.0),  # High downforce racecars with more than 50% of their weight in max downforce
     }
-    categories = {"Roll bar",
-                  "Spring",
-                  "Rebound",
-                  "Bump",
-                  "Differential"}
-
-    def __init__(self):
-        self.arb_front: float
-        self.arb_rear: float
-        self.spring_front: float
-        self.spring_rear: float
-        self.rebound_front: float
-        self.rebound_rear: float
-        self.bump_front: float
-        self.bump_rear: float
-        super().__init__()
-
+    categories: Set = {
+        "Roll bar",
+        "Spring",
+        "Rebound",
+        "Bump",
+        "Differential"
+    }
     def damper_settings(self, spring_front, spring_rear, total_weight):
         front_rebound = self.rebound_max * (spring_front / total_weight)
         rear_rebound = self.rebound_max * (spring_rear / total_weight)
@@ -51,7 +44,6 @@ class Suspension(object):
         return front_rebound, rear_rebound, front_bump, rear_bump
 
     def stiffness(self, total_weight, terrain_type):
-        assert terrain_type in self.terrain_types
         weight_class = vehicle_weight_class(total_weight)
         if terrain_type == "cross-country":
             if weight_class > 2:
@@ -164,25 +156,24 @@ def terrain_modifiers(terrain_type, drivetrain, value):
     return value
 
 
-def calc_suspension(vehicle, engine_location, drivetrain, terrain_type):
-    vehicle_type = vehicle.vehicle_type
+def calc_suspension(vehicle):
     vehicle_weight = vehicle.vehicle_weight
     suspension = Suspension()
-    stiffness = suspension.stiffness(vehicle_weight, terrain_type)
+    stiffness = suspension.stiffness(vehicle_weight, vehicle.terrain_type)
     spring_front, spring_rear = \
         suspension.spring_front, suspension.spring_rear = \
-        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front, terrain_type), \
-        spring_settings(stiffness, vehicle_weight, vehicle.weight_percent_front, terrain_type, is_rear=True)
+        spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type), \
+            spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type, is_rear=True)
     rebound_front, rebound_rear, bump_front, bump_rear = \
         suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear = \
         suspension.damper_settings(spring_front, spring_rear, vehicle_weight)
     arb_front = suspension.arb_front = arb_settings(spring_front)
     arb_rear = suspension.arb_rear = arb_settings(spring_rear)
-    print(drivetrain, engine_location)
-    if drivetrain in {"rwd", "awd"}:
+    print(vehicle.drivetrain, vehicle.engine_location)
+    if vehicle.drivetrain in {"rwd", "awd"}:
         suspension.arb_front = arb_rear
         suspension.arb_rear = arb_front
-        if drivetrain == "rwd":
+        if vehicle.drivetrain == "rwd":
             suspension.spring_front = spring_rear
             suspension.spring_rear = spring_front
             suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear \
