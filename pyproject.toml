@@ -1,0 +1,19 @@
+[project]
+name = "Forza-Horizon5-Auto-Tune"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "Generates custom tunes for vehicles in Forza Horizon 5 using real world parameters"
+authors = [
+    { name = "Rick", email = "Rick.Custureri@gmail.com" }
+]
+license = "Proprietary"
+dependencies = ["pydantic (>=2.11.2,<3.0.0)", "pandas (>=2.2.3,<3.0.0)"]
+
+[tool.poetry]
+package-mode = false
+
+[poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core>=2.1.2"]
+build-backend = "poetry.core.masonry.api"
