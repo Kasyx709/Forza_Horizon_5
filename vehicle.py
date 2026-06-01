@@ -7,8 +7,19 @@
 
 import pandas
 
-from models import BaseVehicle, VehicleCategory, Terrain
+from src.models.terrain import BaseTerrain as Terrain
+from src.models.vehicle import (BaseVehicleCategory, BaseVehicle)
 from suspension import calc_suspension
+
+
+class VehicleCategory(BaseVehicleCategory):
+
+    @classmethod
+    def set_category(cls, vehicle_category: str) -> None:
+        if vehicle_category in cls.vehicle_categories:
+            setattr(cls, "category", cls.category)
+        else:
+            raise ValueError(f"Invalid vehicle type {vehicle_category}")
 
 
 class Vehicle(BaseVehicle, VehicleCategory, Terrain):
@@ -21,9 +32,8 @@ class Vehicle(BaseVehicle, VehicleCategory, Terrain):
     :param front_height:
     :param rear_height:
     :param weight_distribution:
-    :param engine_location:
-    :param drivetrain:
-    :param terrain_types: "cross-country","dirt", "road","snow","race"
+    :param drivetrain: All-wheel Drive (AWD), Rear-wheel Drive (RWD), Front-Wheel Drive (FWD)
+    :param terrain_type: "cross-country","dirt", "road","snow","race"
     :return:
     """
 

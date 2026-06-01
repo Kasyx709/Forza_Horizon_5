@@ -1,8 +1,8 @@
-from typing import Set, List, Dict, Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
-categories: List = [
+vehicle_categories: List = [
     'Buggies', 'Classic Muscle', 'Classic Racers', 'Classic Rally', 'Classic Sports Cars', 'Cult Cars',
     'Drift Cars', 'Extreme Track Toys', 'GT Cars', 'Hot Hatch', 'Hypercars', 'Modern Muscle',
     'Modern Rally', 'Modern Sports Cars', 'Modern Supercars', 'Offroad', 'Pickups & 4x4s',
@@ -11,34 +11,8 @@ categories: List = [
     'Sports Utility Heroes', 'Super GT', 'Super Hot Hatch', 'Super Saloons',
     'Track Toys', 'Trucks', "UTV", 'Unlimited Buggies', 'Unlimited Offroad',
     'Vans & Utility', 'Vintage Racers'
+    'Hypercar'
 ]
-terrain_types: Set = {
-    "cross-country",
-    "dirt",
-    "road",
-    "snow",
-    "race"
-}
-
-
-class Terrain:
-    terrain_type: str
-
-    def set_terrain_type(self, terrain_type: str) -> None:
-        if terrain_type in terrain_types:
-            setattr(self, "terrain_type", terrain_type)
-        else:
-            raise ValueError(f"Invalid terrain type {terrain_type}")
-
-
-class VehicleCategory:
-    category: str
-
-    def set_category(self, category: str) -> None:
-        if category in categories:
-            setattr(self, "category", self.category)
-        else:
-            raise ValueError(f"Invalid terrain type {category}")
 
 
 class BaseVehicle(BaseModel):
@@ -49,7 +23,11 @@ class BaseVehicle(BaseModel):
     front_height: float
     rear_height: float
     weight_distribution: float
-    engine_location: str
     drivetrain: str
     terrain_type: str = None
     category: str = None
+
+
+class BaseVehicleCategory(BaseModel):
+    spring_type: str
+    vehicle_categories: List = vehicle_categories

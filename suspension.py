@@ -7,7 +7,6 @@
 
 from math import pi
 from typing import Dict, Set
-from pydantic import BaseModel
 
 spring_constant: float = 2.8875
 
@@ -36,6 +35,7 @@ class Suspension(object):
         "Bump",
         "Differential"
     }
+
     def damper_settings(self, spring_front, spring_rear, total_weight):
         front_rebound = self.rebound_max * (spring_front / total_weight)
         rear_rebound = self.rebound_max * (spring_rear / total_weight)
@@ -84,6 +84,7 @@ def weight_distribution(vehicle_weight, weight_percent_front):
 def spring_settings(stiffness_rating, vehicle_weight,
                     weight_percent_front,
                     terrain_type,
+                    spring_type,
                     is_rear: bool = False):
     """
     Calculates Spring Rate using natural frequency values
@@ -101,6 +102,7 @@ def spring_settings(stiffness_rating, vehicle_weight,
     3.5-5.0+Hz High downforce racecars with more than 50% of their weight in max downforce
 
     :param terrain_type: Target terrain type for vehicle
+    :param spring_type: Spring type of vehicle (race, drift, offroad)
     :param stiffness_rating:
     :param vehicle_weight: Assumed as lbs and converted to kg
     :param weight_percent_front: percentage of vehicles weight over axle
@@ -124,18 +126,24 @@ def spring_settings(stiffness_rating, vehicle_weight,
     spring_rate = 4 * pi ** 2 * stiffness ** 2 * axle_weight_kg / motion_ratio ** 2
     spring_rate_lb_in = spring_rate * nm_to_nmm_conversion * nmm_to_lbin_conversion
     if terrain_type in {"dirt", "snow"}:
-        spring_rate_lb_in = spring_rate_lb_in * .65
+        spring_rate_lb_in = spring_rate_lb_in * .95
     elif terrain_type == "race":
         if vehicle_weight <= 2500:
-            spring_rate_lb_in = spring_rate_lb_in * 2
+            spring_rate_lb_in = spring_rate_lb_in * 1.5
         elif 2500 < vehicle_weight <= 3500:
             spring_rate_lb_in = spring_rate_lb_in * 1.35
         elif 3500 < vehicle_weight:
-            spring_rate_lb_in = spring_rate_lb_in * 1.2
+            spring_rate_lb_in = spring_rate_lb_in * .65
+        if spring_type == "race":
+            spring_rate_lb_in = spring_rate_lb_in * 2
     return spring_rate_lb_in
 
-
 def arb_settings(spring_rate):
+    """
+    Calculates Anti-rollbar values using spring rate divided by desired
+    :param spring_rate:
+    :return:
+    """
     arb_value = spring_rate / 32.5
     return arb_value
 
@@ -162,14 +170,13 @@ def calc_suspension(vehicle):
     stiffness = suspension.stiffness(vehicle_weight, vehicle.terrain_type)
     spring_front, spring_rear = \
         suspension.spring_front, suspension.spring_rear = \
-        spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type), \
-            spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type, is_rear=True)
+        spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type, vehicle.spring_type), \
+            spring_settings(stiffness, vehicle_weight, vehicle.weight_distribution, vehicle.terrain_type, vehicle.spring_type, is_rear=True)
     rebound_front, rebound_rear, bump_front, bump_rear = \
         suspension.rebound_front, suspension.rebound_rear, suspension.bump_front, suspension.bump_rear = \
         suspension.damper_settings(spring_front, spring_rear, vehicle_weight)
     arb_front = suspension.arb_front = arb_settings(spring_front)
     arb_rear = suspension.arb_rear = arb_settings(spring_rear)
-    print(vehicle.drivetrain, vehicle.engine_location)
     if vehicle.drivetrain in {"rwd", "awd"}:
         suspension.arb_front = arb_rear
         suspension.arb_rear = arb_front
