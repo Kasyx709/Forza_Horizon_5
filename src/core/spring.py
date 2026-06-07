@@ -51,9 +51,9 @@ def spring_rate(stiffness_rating, vehicle_weight,
 
 
 def track_spring_rate(vehicle_weight: int, spring_rate_lb_in: float):
-    if vehicle_weight <= 2500:
+    if vehicle_weight <= 3000:
         spring_rate_lb_in = spring_rate_lb_in * 1.4
-    elif 2500 < vehicle_weight <= 3500:
+    elif 3000 < vehicle_weight <= 3500:
         spring_rate_lb_in = spring_rate_lb_in * 0.55
     elif 3500 < vehicle_weight:
         spring_rate_lb_in = spring_rate_lb_in * .3

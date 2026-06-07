@@ -79,6 +79,7 @@ class Vehicle(TuneBase, Suspension):
 
     def set_track_flag(self):
         if self.spring_type == "track":
+            print(self.spring_type)
             setattr(self, "is_track", True)
 
     def vehicle_attributes(self):
