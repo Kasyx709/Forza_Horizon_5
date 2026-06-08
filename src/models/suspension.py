@@ -20,10 +20,12 @@ class Suspension:
     antirollbar_modifier: float = 35
     track_type_modifier: float = 2.0
     natural_frequency_range: Dict = {
-        1: (1.4, 2.0),  # Rally Cars
-        2: (1.5, 2.5),  # Non-Aero racecars, moderate downforce Formula cars
-        3: (2.5, 3.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
-        4: (3.5, 5.0),  # High downforce racecars with more than 50% of their weight in max downforce
+        "dirt": (1, 1.8),
+        "rally": (1.4, 2.0),  # Rally Cars
+        "street": (1.5, 2),
+        "track": (2.2, 3),  # Non-Aero racecars, moderate downforce Formula cars
+        "race": (3, 4.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
+        "ricky_bobby": (4.5, 6.0),  # High downforce racecars with more than 50% of their weight in max downforce
     }
     _natural_frequency_range: tuple
     forza_tune_categories: Set = {
@@ -33,13 +35,9 @@ class Suspension:
         "Bump",
         "Differential"
     }
-    spring_type_modifier: Dict = {
-        "standard": 1.0,
-        "track": 2.0,
-    }
+
     is_track: bool = False
     spring_type: str
-    spring_multiplier: float
     front_height: Optional[float]
     rear_height: Optional[float]
     suspension_values: Dict = {
@@ -53,24 +51,17 @@ class Suspension:
         "damper_bump_rear": None,
     }
 
-    def set_spring_type_modifier(self):
-        setattr(self, "spring_multiplier", self.spring_type_modifier[self.spring_type])
-        if self.spring_multiplier == 2:
-            setattr(self, "is_track", True)
+    def set_frequency_range(self, purpose):
+        setattr(self, "_natural_frequency_range", self.natural_frequency_range[purpose])
 
-    def set_frequency_range(self, weight_class):
-        setattr(self, "_natural_frequency_range", self.natural_frequency_range[weight_class])
-
-    def set_spring_stiffness(self, weight, weight_distribution_pct, is_rear=False) -> None:
-        if is_rear:
-            setattr(self, "stiffness_spring_rear",
-                    spring_rate(self._natural_frequency_range, weight, weight_distribution_pct,
-                                self.spring_multiplier,
-                                is_rear=True))
+    def set_spring_stiffness(self, weight, weight_distribution_pct) -> None:
+        _softer_spring, _stiffer_spring = spring_rate(self._natural_frequency_range, weight, weight_distribution_pct)
+        if weight_distribution_pct < 50:
+            setattr(self, "stiffness_spring_rear", _softer_spring)
+            setattr(self, "stiffness_spring_front", _stiffer_spring)
         else:
-            setattr(self, "stiffness_spring_front",
-                    spring_rate(self._natural_frequency_range, weight, weight_distribution_pct,
-                                self.spring_multiplier))
+            setattr(self, "stiffness_spring_rear", _stiffer_spring)
+            setattr(self, "stiffness_spring_front", _softer_spring)
 
     def adjust_track_spring_rate_by_weight(self, weight):
         if self.is_track:
@@ -85,15 +76,10 @@ class Suspension:
         setattr(self, "damper_bump_front", self.damper_rebound_front * self.bump_modifier)
         setattr(self, "damper_bump_rear", self.damper_rebound_rear * self.bump_modifier)
 
-    def set_antiroll_bar(self, drivetrain_type):
-        _arb = [antiroll_bar(self.stiffness_spring_front, is_track=self.is_track),
-                antiroll_bar(self.stiffness_spring_rear, is_track=self.is_track, is_rear=True)]
-        if drivetrain_type != 2:
-            setattr(self, "antirollbar_front", _arb[0])
-            setattr(self, "antirollbar_rear", _arb[1])
-        else:
-            setattr(self, "antirollbar_front", _arb[1])
-            setattr(self, "antirollbar_rear", _arb[0])
+    def set_antiroll_bar(self, drivetrain_type, weight_distribution_pct):
+        _arb = antiroll_bar(self.stiffness_spring_front, self.stiffness_spring_rear, weight_distribution_pct)
+        setattr(self, "antirollbar_front", _arb[0])
+        setattr(self, "antirollbar_rear", _arb[1])
         del _arb
 
     def vehicle_suspension(self):

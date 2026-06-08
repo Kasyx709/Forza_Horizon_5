@@ -10,7 +10,6 @@ from typing import List, Dict
 import pandas
 
 from src.base_class.base_class import TuneBase
-from src.core.weight import modified_weight_class, vehicle_weight_class
 from src.models.suspension import Suspension
 
 
@@ -44,7 +43,7 @@ class Vehicle(TuneBase, Suspension):
     :param weight:
     :param weight_distribution_pct:
     :param drivetrain_type: All-wheel Drive (AWD), Rear-wheel Drive (RWD), Front-Wheel Drive (FWD)
-    :param terrain_type: "cross-country","dirt", "road","snow","race"
+    :param purpose: "cross-country","dirt", "road","snow","race"
     :return:
     """
     drivetrain_types: Dict[str, str] = {
@@ -54,24 +53,16 @@ class Vehicle(TuneBase, Suspension):
     }
 
     def __init__(self,
-                 weight, weight_distribution_pct, drivetrain_type, terrain_type, spring_type=None, year=None, make=None,
+                 weight, weight_distribution_pct, drivetrain_type, purpose, year=None, make=None,
                  model=None,
                  ):
         self.weight = weight
         self.weight_distribution_pct = weight_distribution_pct
-        self.weight_class = vehicle_weight_class(weight)
-        if terrain_type != "road":
-            self.weight_class = modified_weight_class(self.weight_class, terrain_type)
-        self.spring_type = spring_type if spring_type else "standard"
+        self.purpose = purpose
         self.drivetrain_type = self.drivetrain_types[drivetrain_type.upper()]
         self.year = year
         self.make = make
         self.model = model
-
-    def set_track_flag(self):
-        if self.spring_type == "track":
-            print(self.spring_type)
-            setattr(self, "is_track", True)
 
     def vehicle_attributes(self):
         for k in self.__dict__:

@@ -1,14 +1,20 @@
-import math
-
-from src.math.formulae import spring_formula, corner_mass
+from src.math.formulae import spring_formula, axle_mass, vehicle_mass, frequency_offset
 
 spring_constant: float = 2.8875
 
 
-def spring_rate(frequency, vehicle_weight,
+def _base_frequency(_weight: int, frequencies: tuple):
+    _frequency = frequencies[0] + (1000 * frequencies[1] - _weight) / 100
+    if _frequency < frequencies[0]:
+        _frequency = frequencies[0]
+    elif _frequency > frequencies[1]:
+        _frequency = frequencies[1]
+    return _frequency
+
+
+def spring_rate(natural_frequency, vehicle_weight,
                 weight_distribution_pct,
-                spring_multiplier: float,
-                is_rear: bool = False):
+                ):
     """
     Calculates Spring Rate using natural frequency values
     K = (4π²F²M)/mr²
@@ -25,31 +31,34 @@ def spring_rate(frequency, vehicle_weight,
     2.5-3.5Hz Moderate downforce racecars with up to 50% total weight in max downforce capability
     3.5-5.0+Hz High downforce racecars with more than 50% of their weight in max downforce
 
-    :param spring_multiplier: Multiplies spring rate values to account for various spring types
-    :param frequency: the range of natural frequency values to consider
+    :param natural_frequency: the range of natural frequency values to consider
     :param vehicle_weight: Assumed as lbs and converted to kg
     :param weight_distribution_pct: percentage of vehicles weight over axle
-    :param is_rear: boolean, denotes whether value is for front/rear spring
-    :param frequency_offset_pct: This is the difference between front and rear ride frequencies.
-    Front values are typically 10-20% higher than rear.
     :return: Values for spring rate in lbs/in
     """
-
-    frequency_offset_pct = 1.175
-    weight_percent = weight_distribution_pct * .01
-    _frequency = frequency[0]
-    if is_rear:
-        weight_percent = 1 - weight_percent
-        if _frequency * frequency_offset_pct >= frequency[1]:
-            _frequency = frequency[1]
-        else:
-            f = math.sqrt(vehicle_weight)
-            _frequency = frequency[0] * frequency_offset_pct
-    _corner_mass = corner_mass(vehicle_weight, weight_percent)
-    natural_frequency = ''
-    _spring_rate = spring_formula(_frequency, _corner_mass)
-    print(_spring_rate)
-    return _spring_rate
+    # If weight increases by X%, natural frequency drops by roughly X/2%
+    # lighter side gets the higher natural frequency
+    _minimum_frequency_offset = 1.175
+    frequency_max = _base_frequency(vehicle_weight, natural_frequency)
+    _front_bias = weight_distribution_pct * 0.01
+    _vehicle_mass = vehicle_mass(vehicle_weight)
+    _front_axle_, _rear_axle = axle_mass(_vehicle_mass, _front_bias)
+    _the_front_weighs_more = False
+    if _front_axle_ > _rear_axle:
+        _the_front_weighs_more = True
+        _frequency_offset = frequency_offset(_front_axle_, _rear_axle)
+    else:
+        _frequency_offset = frequency_offset(_rear_axle, _front_axle_)
+    if _frequency_offset < _minimum_frequency_offset:
+        _frequency_offset = _minimum_frequency_offset
+    frequency_min = round(frequency_max / _frequency_offset, 2)
+    if _the_front_weighs_more:
+        _softer_spring = spring_formula(frequency_min, _front_axle_)
+        _stiffer_spring = spring_formula(frequency_max, _rear_axle)
+    else:
+        _softer_spring = spring_formula(frequency_min, _rear_axle)
+        _stiffer_spring = spring_formula(frequency_max, _front_axle_)
+    return _softer_spring, _stiffer_spring
 
 
 def track_spring_rate(vehicle_weight: int, spring_rate_lb_in: float):

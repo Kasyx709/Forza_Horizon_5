@@ -11,7 +11,7 @@ if TYPE_CHECKING:
         make: Optional[str]
         model: Optional[str]
         weight: int
-        weight_class: int
+        purpose: int
         vehicle_category: str
         weight_distribution_pct: float
         drivetrain_type: str

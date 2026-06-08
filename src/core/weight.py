@@ -4,7 +4,7 @@ def modified_weight_class(_weight_class, race_type):
             _weight_class = _weight_class - 2
         elif _weight_class == 2:
             _weight_class = _weight_class - 1
-    elif race_type =="track":
+    elif race_type == "track":
         _weight_class = _weight_class + 1 if _weight_class < 4 else 4
     elif race_type in {"dirt", "snow"}:
         if 2 <= _weight_class <= 3:
@@ -12,6 +12,7 @@ def modified_weight_class(_weight_class, race_type):
         elif _weight_class == 4:
             _weight_class = _weight_class - 2
     return _weight_class
+
 
 def vehicle_weight_class(vehicle_weight):
     if 3000 >= vehicle_weight:
