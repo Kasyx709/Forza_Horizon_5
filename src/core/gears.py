@@ -24,7 +24,7 @@ tire_coefficients: Dict = {
 
 # 77
 surface_coefficients: Dict = {
-    "Asphalt": 0.9, # Teste Values
+    "Asphalt": 0.6,  # Teste Values
     "Dirt": 0.1,
 }
 
@@ -87,16 +87,17 @@ def gear_ratio_calculator(
     width, sidewall_height, wheel_diameter = tire_size
     number_of_mm_per_inch = 25.4
     inches_per_minute_to_miles_per_hour_conversion_ratio = 1 / 1056
-    torque_coefficient = 0.98
+    torque_coefficient = 0.8
     gear_coefficient = 0.87
-    atmospheric_pressure = 15
-    turbo_efficiency_coefficient =  0.98
+    atmospheric_pressure = 14.7
+    turbo_efficiency_coefficient = 0.8
     _next_gear = lambda x, y: round(x * gear_coefficient - y, 2)
     tire_size_in_inches = (width * sidewall_height / 100 / number_of_mm_per_inch) * 2 + 15
     tire_size_in_feet: float = (tire_size_in_inches * 0.5) / 12
     weight_at_wheels: int = vehicle_weight * drivetrain_weight_offsets[drivetrain_type.upper()]
-    if turbo_psi:
-        _boost_multiplier = round((turbo_psi + atmospheric_pressure) * turbo_efficiency_coefficient * 1 / atmospheric_pressure,2)
+    if turbo_psi and turbo_psi > 0:
+        _boost_multiplier = round(
+            (turbo_psi + atmospheric_pressure) * turbo_efficiency_coefficient * 1 / atmospheric_pressure, 2)
         vehicle_torque = vehicle_torque * _boost_multiplier
     maximum_contact_force: float = weight_at_wheels * tire_coefficients[tire_compound] * tire_size_in_feet
     maximum_traction: float = maximum_contact_force / (final_drive_ratio * vehicle_torque * torque_coefficient)
@@ -109,7 +110,7 @@ def gear_ratio_calculator(
         maximum_speed: int = math.floor(
             math.pi * tire_size_in_inches * wheel_rpm * inches_per_minute_to_miles_per_hour_conversion_ratio
         )
-        print(f"R1S {surface_type} - {maximum_speed, wheel_rpm}")
+        #print(f"R1S {surface_type} - {maximum_speed, wheel_rpm}")
         _current_gear: float = _max_safe_first
         gear_ratios[surface_type] = [_max_safe_first]
         _gears: Dict = {}

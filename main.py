@@ -10,17 +10,17 @@ from src.models.vehicle import Vehicle
 if __name__ == '__main__':
     # TODO Add in sqlite db that allows for local storing/recalling of previous vehicle configurations.
     spring_type = "track", "standard"
-    weight = 2301
-    number_of_gears = 4
-    rpm_redline = 9200
-    vehicle_torque = 1347
-    weight_distribution_pct = 43
-    turbo_psi = 14.7
-    tire_size = {385, 30, 18}
-    final_drive_ratio = 2.6
+    weight = 2870
+    number_of_gears = 6
+    rpm_redline = 8500
+    vehicle_torque = 1003
+    weight_distribution_pct = 38
+    turbo_psi = 8
+    tire_size = {385, 20, 18}
+    final_drive_ratio = 2.3
     drivetrain_type = "RWD"
     terrain_type = "track"
-    tire_compound = "Slick"
+    tire_compound = "Semislick"
     vehicle = Vehicle(
         weight=weight
         , weight_distribution_pct=weight_distribution_pct
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     vehicle.set_frequency_range(vehicle.weight_class)
     vehicle.set_spring_stiffness(vehicle.weight, vehicle.weight_distribution_pct)
     vehicle.set_spring_stiffness(vehicle.weight, vehicle.weight_distribution_pct, is_rear=True)
-    vehicle.adjust_track_spring_rate_by_weight(vehicle.weight)
+    #vehicle.adjust_track_spring_rate_by_weight(vehicle.weight)
     vehicle.set_damper_rebound(vehicle.weight)
     vehicle.set_damper_bump()
     vehicle.set_antiroll_bar(vehicle.drivetrain_type)

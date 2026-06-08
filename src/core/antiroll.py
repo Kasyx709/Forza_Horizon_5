@@ -1,4 +1,5 @@
-_antirollbar_modifier: float = 35
+# Conversion from Weight -> mass = Weight / 32.2 | 32.5 = half of 65
+_antirollbar_modifier: float = 32.2
 
 
 def antiroll_bar(spring_rate: float, is_track: bool = False, is_rear: bool = False,

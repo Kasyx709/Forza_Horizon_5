@@ -1,5 +1,5 @@
-from typing import Optional
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+
 
 class _Base:
     pass
@@ -17,6 +17,5 @@ if TYPE_CHECKING:
         drivetrain_type: str
         terrain_type: str
         spring_type: str
-
 else:
     TuneBase = _Base

@@ -5,7 +5,7 @@
  */
 """
 
-from typing import Optional, List, Dict
+from typing import List, Dict
 
 import pandas
 
@@ -47,16 +47,7 @@ class Vehicle(TuneBase, Suspension):
     :param terrain_type: "cross-country","dirt", "road","snow","race"
     :return:
     """
-    year: Optional[int]
-    make: Optional[str]
-    model: Optional[str]
-    weight: int
-    vehicle_category: str
-    weight_distribution_pct: float
-    weight_class: int
-    spring_type: str
-    drivetrain_type: str
-    drivetrain_types: Dict = {
+    drivetrain_types: Dict[str, str] = {
         "AWD": 1,
         "RWD": 2,
         "FWD": 3,
