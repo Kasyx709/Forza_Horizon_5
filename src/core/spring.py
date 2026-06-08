@@ -4,7 +4,7 @@ spring_constant: float = 2.8875
 
 
 def _base_frequency(_weight: int, frequencies: tuple):
-    _frequency = frequencies[0] + (1000 * frequencies[1] - _weight) / 100
+    _frequency = round(frequencies[0] + (1000 * frequencies[1] -_weight)/2000, 1)
     if _frequency < frequencies[0]:
         _frequency = frequencies[0]
     elif _frequency > frequencies[1]:
@@ -12,15 +12,16 @@ def _base_frequency(_weight: int, frequencies: tuple):
     return _frequency
 
 
-def spring_rate(natural_frequency, vehicle_weight,
-                weight_distribution_pct,
-                ):
+def spring_rate(
+        natural_frequency, vehicle_weight,
+        weight_distribution_pct,
+):
     """
     Calculates Spring Rate using natural frequency values
     K = (4π²F²M)/mr²
     F = NATURAL FREQUENCY (HZ)
        F = 1/(2π)√(K/M)
-    K = SPRING RATE (N/M)
+    K = SPRING RATE (N/m)
     M = MASS (KG)
     MR = MOTION RATIO (Forza does not simulate MR so MR = 1)
 
@@ -59,13 +60,3 @@ def spring_rate(natural_frequency, vehicle_weight,
         _softer_spring = spring_formula(frequency_min, _rear_axle)
         _stiffer_spring = spring_formula(frequency_max, _front_axle_)
     return _softer_spring, _stiffer_spring
-
-
-def track_spring_rate(vehicle_weight: int, spring_rate_lb_in: float):
-    if vehicle_weight <= 3000:
-        spring_rate_lb_in = spring_rate_lb_in * 1.4
-    elif 3000 < vehicle_weight <= 3500:
-        spring_rate_lb_in = spring_rate_lb_in * 0.55
-    elif 3500 < vehicle_weight:
-        spring_rate_lb_in = spring_rate_lb_in * .3
-    return spring_rate_lb_in

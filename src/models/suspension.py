@@ -2,7 +2,7 @@ from typing import Dict, Set
 from typing import Optional
 
 from src.core.antiroll import antiroll_bar
-from src.core.spring import spring_rate, track_spring_rate
+from src.core.spring import spring_rate
 
 
 class Suspension:
@@ -14,18 +14,18 @@ class Suspension:
     damper_rebound_rear: float
     damper_bump_front: float
     damper_bump_rear: float
-    damper_rebound_max: int = 40
-    damper_bump_max: int = 40
+    damper_rebound_max: int = 20
     bump_modifier: float = 0.65
     antirollbar_modifier: float = 35
     track_type_modifier: float = 2.0
     natural_frequency_range: Dict = {
         "dirt": (1, 1.8),
         "rally": (1.4, 2.0),  # Rally Cars
-        "street": (1.5, 2),
+        "street": (1.6, 2),  # Performance Based Sports Cars
         "track": (2.2, 3),  # Non-Aero racecars, moderate downforce Formula cars
         "race": (3, 4.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
-        "ricky_bobby": (4.5, 6.0),  # High downforce racecars with more than 50% of their weight in max downforce
+        "rickybobby": (4.5, 6.0),  # High downforce racecars with more than 50% of their weight in max downforce
+        "test": (2.5, 6)
     }
     _natural_frequency_range: tuple
     forza_tune_categories: Set = {
@@ -57,20 +57,17 @@ class Suspension:
     def set_spring_stiffness(self, weight, weight_distribution_pct) -> None:
         _softer_spring, _stiffer_spring = spring_rate(self._natural_frequency_range, weight, weight_distribution_pct)
         if weight_distribution_pct < 50:
-            setattr(self, "stiffness_spring_rear", _softer_spring)
             setattr(self, "stiffness_spring_front", _stiffer_spring)
-        else:
-            setattr(self, "stiffness_spring_rear", _stiffer_spring)
-            setattr(self, "stiffness_spring_front", _softer_spring)
+            setattr(self, "stiffness_spring_rear", _softer_spring)
 
-    def adjust_track_spring_rate_by_weight(self, weight):
-        if self.is_track:
-            setattr(self, "stiffness_spring_front", track_spring_rate(weight, self.stiffness_spring_front))
-            setattr(self, "stiffness_spring_rear", track_spring_rate(weight, self.stiffness_spring_rear))
+        else:
+            setattr(self, "stiffness_spring_front", _softer_spring)
+            setattr(self, "stiffness_spring_rear", _stiffer_spring)
 
     def set_damper_rebound(self, weight):
-        setattr(self, "damper_rebound_front", self.damper_rebound_max * (self.stiffness_spring_front / weight))
-        setattr(self, "damper_rebound_rear", self.damper_rebound_max * (self.stiffness_spring_rear / weight))
+        setattr(self, "damper_rebound_front", 1 + 19 * (self.stiffness_spring_front /weight))
+        setattr(self, "damper_rebound_rear", 1 + 19 * (self.stiffness_spring_rear /weight))
+        #setattr(self, "damper_rebound_rear", 2 * self.damper_rebound_max * (self.stiffness_spring_rear / weight))
 
     def set_damper_bump(self):
         setattr(self, "damper_bump_front", self.damper_rebound_front * self.bump_modifier)

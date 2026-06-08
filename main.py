@@ -10,16 +10,16 @@ from src.models.vehicle import Vehicle
 if __name__ == '__main__':
     # TODO Add in sqlite db that allows for local storing/recalling of previous vehicle configurations.
     spring_type = "track", "standard"
-    weight = 3142
+    weight = 1588
     number_of_gears = 6
-    rpm_redline = 8500
-    vehicle_torque = 1003
-    weight_distribution_pct = 52
-    turbo_psi = 8
-    tire_size = {385, 20, 18}
+    rpm_redline = 7500
+    vehicle_torque = 845
+    weight_distribution_pct = 49
+    turbo_psi = 0
+    tire_size = {285, 50, 15}
     final_drive_ratio = 2.3
     drivetrain_type = "RWD"
-    purpose = "track"
+    purpose = "rickybobby"
     tire_compound = "Semislick"
     vehicle = Vehicle(
         weight=weight
@@ -44,3 +44,4 @@ if __name__ == '__main__':
         , final_drive_ratio
         , turbo_psi
     )
+    print(gears)

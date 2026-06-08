@@ -2,7 +2,7 @@ import math
 
 gravity = 32.2  # expressed as ft/s^2
 inches_per_second = gravity * 12
-motion_ratio = 2
+motion_ratio = 1
 weight_to_mass = 32.174048556
 lb_to_kg_conversion = 0.453592
 nm_to_lbin = 0.00571
@@ -18,6 +18,6 @@ frequency_offset = lambda _heavier_weight, _lighter_weight: round((_heavier_weig
 
 
 def spring_formula(_frequency, _axle_mass):
-    _spring_rate = 4 * math.pi **2 * _frequency ** 2 * _axle_mass / motion_ratio ** 2
+    _spring_rate = (4 * math.pi ** 2) * (_frequency ** 2) * (_axle_mass / 2) / motion_ratio ** 2
     _spring_rate_lb_in = _spring_rate * nm_to_lbin
     return _spring_rate_lb_in
