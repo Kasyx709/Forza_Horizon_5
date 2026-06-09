@@ -21,8 +21,8 @@ class Suspension:
     natural_frequency_range: Dict = {
         "dirt": (1, 1.8),
         "rally": (1.4, 2.0),  # Rally Cars
-        "street": (1.6, 2),  # Performance Based Sports Cars
-        "track": (2.2, 3),  # Non-Aero racecars, moderate downforce Formula cars
+        "street": (1.5, 2.5),  # Performance Based Sports Cars
+        "track": (2.5, 3.5),  # Non-Aero racecars, moderate downforce Formula cars
         "race": (3, 4.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
         "rickybobby": (4.5, 6.0),  # High downforce racecars with more than 50% of their weight in max downforce
         "test": (2.5, 6)
@@ -65,16 +65,17 @@ class Suspension:
             setattr(self, "stiffness_spring_rear", _stiffer_spring)
 
     def set_damper_rebound(self, weight):
-        setattr(self, "damper_rebound_front", 1 + 19 * (self.stiffness_spring_front /weight))
-        setattr(self, "damper_rebound_rear", 1 + 19 * (self.stiffness_spring_rear /weight))
-        #setattr(self, "damper_rebound_rear", 2 * self.damper_rebound_max * (self.stiffness_spring_rear / weight))
+        setattr(self, "damper_rebound_front", 1 + 19 * (self.stiffness_spring_front / weight))
+        setattr(self, "damper_rebound_rear", 1 + 19 * (self.stiffness_spring_rear / weight))
+        # setattr(self, "damper_rebound_rear", 2 * self.damper_rebound_max * (self.stiffness_spring_rear / weight))
 
     def set_damper_bump(self):
         setattr(self, "damper_bump_front", self.damper_rebound_front * self.bump_modifier)
         setattr(self, "damper_bump_rear", self.damper_rebound_rear * self.bump_modifier)
 
-    def set_antiroll_bar(self, drivetrain_type, weight_distribution_pct):
-        _arb = antiroll_bar(self.stiffness_spring_front, self.stiffness_spring_rear, weight_distribution_pct)
+    def set_antiroll_bar(self, weight_distribution_pct: int, track_length: int):
+        _arb = antiroll_bar(self.stiffness_spring_front, self.stiffness_spring_rear, weight_distribution_pct,
+                            track_length=track_length)
         setattr(self, "antirollbar_front", _arb[0])
         setattr(self, "antirollbar_rear", _arb[1])
         del _arb

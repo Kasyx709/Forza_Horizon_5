@@ -24,7 +24,7 @@ tire_coefficients: Dict = {
 
 # 77
 surface_coefficients: Dict = {
-    "Asphalt": 0.6,  # Teste Values
+    "Asphalt": 0.9,  # Teste Values
     "Dirt": 0.1,
 }
 
@@ -88,7 +88,7 @@ def gear_ratio_calculator(
     number_of_mm_per_inch = 25.4
     inches_per_minute_to_miles_per_hour_conversion_ratio = 1 / 1056
     torque_coefficient = 0.8
-    gear_coefficient = 0.87
+    gear_coefficient = 0.9
     atmospheric_pressure = 14.7
     turbo_efficiency_coefficient = 0.8
     _next_gear = lambda x, y: round(x * gear_coefficient - y, 2)
@@ -105,7 +105,10 @@ def gear_ratio_calculator(
         "Final Drive Ratio": final_drive_ratio,
     }
     for surface_type in surface_coefficients:
+        _gears: Dict = {}
         _max_safe_first = round(maximum_traction + surface_coefficients[surface_type], 2)
+        print(_max_safe_first)
+
         wheel_rpm = rpm_redline * 1 / (final_drive_ratio * _max_safe_first)
         maximum_speed: int = math.floor(
             math.pi * tire_size_in_inches * wheel_rpm * inches_per_minute_to_miles_per_hour_conversion_ratio
@@ -113,9 +116,8 @@ def gear_ratio_calculator(
         #print(f"R1S {surface_type} - {maximum_speed, wheel_rpm}")
         _current_gear: float = _max_safe_first
         gear_ratios[surface_type] = [_max_safe_first]
-        _gears: Dict = {}
-        for _gear in range(2, number_of_gears + 1):
-            __next_gear = _next_gear(_current_gear, 0 if _gear <= (number_of_gears - 2) else 0.1)
+        for _gear in range(number_of_gears -1):
+            __next_gear = _next_gear(_current_gear, 0 if _gear <= (number_of_gears - 2) else 0.01)
             _gears.update({f"Gear# {_gear}": __next_gear})
             _current_gear = __next_gear
         gear_ratios[surface_type] = gear_ratios[surface_type] + list(_gears.values())

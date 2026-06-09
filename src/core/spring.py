@@ -4,7 +4,7 @@ spring_constant: float = 2.8875
 
 
 def _base_frequency(_weight: int, frequencies: tuple):
-    _frequency = round(frequencies[0] + (1000 * frequencies[1] -_weight)/2000, 1)
+    _frequency = round(frequencies[1] - (1000 * frequencies[1] -_weight)/2000, 1)
     if _frequency < frequencies[0]:
         _frequency = frequencies[0]
     elif _frequency > frequencies[1]:

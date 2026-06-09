@@ -2,7 +2,7 @@ import math
 
 gravity = 32.2  # expressed as ft/s^2
 inches_per_second = gravity * 12
-motion_ratio = 1
+motion_ratio = 0.98
 weight_to_mass = 32.174048556
 lb_to_kg_conversion = 0.453592
 nm_to_lbin = 0.00571
