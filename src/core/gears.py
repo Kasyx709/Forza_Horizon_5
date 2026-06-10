@@ -102,6 +102,7 @@ def gear_ratio_calculator(
         )
     return gear_ratios
 
+
 def _gear_ratios(
         surface_type: str
         , _torque
@@ -109,6 +110,8 @@ def _gear_ratios(
         , maximum_contact_force
         , number_of_gears
         , rpm_redline
+        , _target_final_gear: float = 0.84
+
 ) -> Dict[str, float]:
     _gear_coefficient = 0.8
     _torque_coefficient = 0.875
@@ -116,7 +119,7 @@ def _gear_ratios(
     _next_gear = lambda x, y: round(x * _gear_coefficient - y, 2)
     _final_drive_ratio = 6.10
     _peak_power = rpm_redline * 0.9
-    while next(reversed(_gears.values())) < 0.76:
+    while next(reversed(_gears.values())) < _target_final_gear:
         _max_traction: float = maximum_contact_force / (_final_drive_ratio * _torque * _torque_coefficient)
         _first_gear: float = round(_max_traction + surface_coefficients[surface_type], 2)
         _gears[1] = _first_gear
@@ -124,16 +127,20 @@ def _gear_ratios(
         _engine_rpm = round(wheel_rpm * _final_drive_ratio * _first_gear, 0)
         # maximum_speed: int = math.floor(math.pi * tire_size_in_inches * wheel_rpm * inches_per_minute_to_miles_per_hour_conversion_ratio)
         if _engine_rpm > rpm_redline:
-            _final_drive_ratio = _final_drive_ratio - 0.01 if _final_drive_ratio > 2.2 else 2.2
-            continue
+            _final_drive_ratio -= 0.1
+        if next(reversed(_gears.values())) < _target_final_gear and _final_drive_ratio == 2.2:
+            break
+        if _final_drive_ratio < 2.2:
+            _final_drive_ratio = 2.2
+            break
         else:
             _current_gear = _gears[1]
             for _gear_number in range(2, number_of_gears + 1):
                 _gear = _next_gear(_current_gear, 0 if _gear_number <= (number_of_gears - 2) else 0.01)
                 _gears.update({_gear_number: _gear})
                 _current_gear = _gear
-            if next(reversed(_gears.values())) < 0.76:
-                _final_drive_ratio = _final_drive_ratio - 0.01 if _final_drive_ratio > 2.2 else 2.2
+            if next(reversed(_gears.values())) < _target_final_gear and _final_drive_ratio > 2.2:
+                _final_drive_ratio -= 0.01
     _gears["Final Drive Ratio"] = round(_final_drive_ratio, 2)
     return _gears
 
