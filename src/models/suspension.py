@@ -6,21 +6,23 @@ from src.core.spring import spring_rate
 
 
 class Suspension:
-    antirollbar_front: float
-    antirollbar_rear: float
-    stiffness_spring_front: float
-    stiffness_spring_rear: float
-    damper_rebound_front: float
-    damper_rebound_rear: float
-    damper_bump_front: float
-    damper_bump_rear: float
+    antirollbar_front: float | None = None
+    antirollbar_rear: float | None = None
+    stiffness_spring_front: float | None = None
+    stiffness_spring_rear: float | None = None
+    damper_rebound_front: float | None = None
+    damper_rebound_rear: float | None = None
+    damper_bump_front: float | None = None
+    damper_bump_rear: float | None = None
+    front_height: Optional[float] | None = None
+    rear_height: Optional[float] | None = None
     damper_rebound_max: int = 20
     bump_modifier: float = 0.65
     antirollbar_modifier: float = 35
     track_type_modifier: float = 2.0
     natural_frequency_range: Dict = {
         "dirt": (1, 1.8),
-        "rally": (1.4, 2.0),  # Rally Cars
+        "rally": (1.6, 2.8),  # Rally Cars
         "street": (1.5, 2.5),  # Performance Based Sports Cars
         "track": (2.5, 3.5),  # Non-Aero racecars, moderate downforce Formula cars
         "race": (3, 4.5),  # Moderate downforce racecars with up to 50% total weight in max downforce capability
@@ -35,11 +37,6 @@ class Suspension:
         "Bump",
         "Differential"
     }
-
-    is_track: bool = False
-    spring_type: str
-    front_height: Optional[float]
-    rear_height: Optional[float]
     suspension_values: Dict = {
         "antirollbar_front": None,
         "antirollbar_rear": None,

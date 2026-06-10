@@ -8,6 +8,7 @@ lb_to_kg_conversion = 0.453592
 nm_to_lbin = 0.00571
 nm_to_nmm_conversion = 0.001
 nmm_to_lbin_conversion = 5.7101471627692
+inches_per_minute_to_miles_per_hour_conversion_ratio = 1 / 1056
 
 vehicle_mass = lambda _vehicle_weight: _vehicle_weight * lb_to_kg_conversion
 axle_mass = lambda _vehicle_mass, _front_bias: (

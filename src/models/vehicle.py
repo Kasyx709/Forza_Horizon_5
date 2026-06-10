@@ -4,8 +4,7 @@
  * Written by Richard Custureri <Rick.Custureri@gmail.com>, January 2022
  */
 """
-
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import pandas
 
@@ -13,7 +12,19 @@ from src.base_class.base_class import TuneBase
 from src.models.suspension import Suspension
 
 
-class VehicleCategory(TuneBase):
+class VehicleCategory:
+    """
+    :param year: Year of vehicle
+    :param make: Make of vehicle
+    :param model: Model of vehicle
+    :param category: Type of Vehicle
+    :return:
+    """
+    year: Optional[int]| None = None
+    make: Optional[str]| None = None
+    model: Optional[str]| None = None
+    category: Optional[str]| None = None
+
     vehicle_categories: List = [
         'Buggies', 'Classic Muscle', 'Classic Racers', 'Classic Rally', 'Classic Sports Cars', 'Cult Cars',
         'Drift Cars', 'Extreme Track Toys', 'GT Cars', 'Hot Hatch', 'Hypercars', 'Modern Muscle',
@@ -29,47 +40,9 @@ class VehicleCategory(TuneBase):
     @classmethod
     def set_category(cls, vehicle_category: str) -> None:
         if vehicle_category in cls.vehicle_categories:
-            setattr(cls, "category", cls.category)
+            setattr(cls, "category", vehicle_category)
         else:
             raise ValueError(f"Invalid vehicle type {vehicle_category}")
-
-
-class Vehicle(TuneBase, Suspension):
-    """
-    Create custom tuning parameters for a vehicle in Forza Horizon 5 using real world tuning parameters
-    :param year: Year of vehicle
-    :param make: Make of vehicle
-    :param model: Model of vehicle
-    :param weight:
-    :param weight_distribution_pct:
-    :param drivetrain_type: All-wheel Drive (AWD), Rear-wheel Drive (RWD), Front-Wheel Drive (FWD)
-    :param purpose: "cross-country","dirt", "road","snow","race"
-    :return:
-    """
-    drivetrain_types: Dict[str, str] = {
-        "AWD": 1,
-        "RWD": 2,
-        "FWD": 3,
-    }
-
-    def __init__(self,
-                 weight, weight_distribution_pct, drivetrain_type, purpose, year=None, make=None,
-                 model=None,
-                 ):
-        self.weight = weight
-        self.weight_distribution_pct = weight_distribution_pct
-        self.purpose = purpose
-        self.drivetrain_type = self.drivetrain_types[drivetrain_type.upper()]
-        self.year = year
-        self.make = make
-        self.model = model
-
-    def vehicle_attributes(self):
-        for k in self.__dict__:
-            print(k, self.__getattribute__(k))
-
-    def set_drivetrain_type(self):
-        setattr(self, "drivetrain_type", self.drivetrain_types[self.drivetrain_type])
 
     @staticmethod
     def vehicle_class(vehicle_model_year):
@@ -95,6 +68,33 @@ class Vehicle(TuneBase, Suspension):
         cars.set_index(["Year", "Make", "Model", "Car Type"], inplace=True, drop=True)
         if not cars.empty:
             return cars.index[0]
+
+class Vehicle(Suspension, VehicleCategory,TuneBase):
+    """
+    Create custom tuning parameters for a vehicle in Forza Horizon using real world tuning parameters
+    :param year: Year of vehicle
+    :param make: Make of vehicle
+    :param model: Model of vehicle
+    :param weight: Weight of vehicle
+    :param weight_distribution_pct:
+    :param drivetrain_type: All-wheel Drive (AWD), Rear-wheel Drive (RWD), Front-Wheel Drive (FWD)
+    :param purpose: "cross-country","dirt", "road","snow","race"
+    :return:
+    """
+    drivetrain_types: Dict[str, str] = {
+        "AWD": 1,
+        "RWD": 2,
+        "FWD": 3,
+    }
+
+    def vehicle_attributes(self):
+        for k in self.__dict__:
+            print(k, self.__getattribute__(k))
+
+    def set_drivetrain_type(self):
+        setattr(self, "drivetrain_type", self.drivetrain_types[self.drivetrain_type])
+
+
 
 
 if __name__ == '__main__':

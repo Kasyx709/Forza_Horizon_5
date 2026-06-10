@@ -1,5 +1,4 @@
-import math
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 drivetrain_weight_offsets: Dict = {
     "RWD": 0.60
@@ -25,7 +24,7 @@ tire_coefficients: Dict = {
 # 77
 surface_coefficients: Dict = {
     "Asphalt": 0.9,  # Teste Values
-    "Dirt": 0.1,
+    "Dirt": 0.7,
 }
 
 
@@ -37,9 +36,8 @@ def gear_ratio_calculator(
         , number_of_gears: int
         , tire_compound: str
         , tire_size: set
-        , final_drive_ratio: float
         , turbo_psi: Optional[float] = None
-) -> Dict[str, float]:
+) -> dict[str, dict[str, float]]:
     """
     Returns gear ratio given rpm, tire diameter, and torque using the following formulas:
 
@@ -86,12 +84,8 @@ def gear_ratio_calculator(
     # tire pressure has some effect, unknown at this time. I suspect it effects contact points
     width, sidewall_height, wheel_diameter = tire_size
     number_of_mm_per_inch = 25.4
-    inches_per_minute_to_miles_per_hour_conversion_ratio = 1 / 1056
-    torque_coefficient = 0.8
-    gear_coefficient = 0.9
     atmospheric_pressure = 14.7
     turbo_efficiency_coefficient = 0.8
-    _next_gear = lambda x, y: round(x * gear_coefficient - y, 2)
     tire_size_in_inches = (width * sidewall_height / 100 / number_of_mm_per_inch) * 2 + 15
     tire_size_in_feet: float = (tire_size_in_inches * 0.5) / 12
     weight_at_wheels: int = vehicle_weight * drivetrain_weight_offsets[drivetrain_type.upper()]
@@ -99,29 +93,49 @@ def gear_ratio_calculator(
         _boost_multiplier = round(
             (turbo_psi + atmospheric_pressure) * turbo_efficiency_coefficient * 1 / atmospheric_pressure, 2)
         vehicle_torque = vehicle_torque * _boost_multiplier
-    maximum_contact_force: float = weight_at_wheels * tire_coefficients[tire_compound] * tire_size_in_feet
-    maximum_traction: float = maximum_contact_force / (final_drive_ratio * vehicle_torque * torque_coefficient)
-    gear_ratios: Dict[str, Any] = {
-        "Final Drive Ratio": final_drive_ratio,
-    }
+    _maximum_contact_force: float = weight_at_wheels * tire_coefficients[tire_compound] * tire_size_in_feet
+    gear_ratios: Dict[str, Dict[str, float]] = {}
     for surface_type in surface_coefficients:
-        _gears: Dict = {}
-        _max_safe_first = round(maximum_traction + surface_coefficients[surface_type], 2)
-        print(_max_safe_first)
-
-        wheel_rpm = rpm_redline * 1 / (final_drive_ratio * _max_safe_first)
-        maximum_speed: int = math.floor(
-            math.pi * tire_size_in_inches * wheel_rpm * inches_per_minute_to_miles_per_hour_conversion_ratio
+        gear_ratios[surface_type] = _gear_ratios(
+            surface_type, vehicle_torque, tire_size_in_inches,
+            _maximum_contact_force, number_of_gears, rpm_redline
         )
-        #print(f"R1S {surface_type} - {maximum_speed, wheel_rpm}")
-        _current_gear: float = _max_safe_first
-        gear_ratios[surface_type] = [_max_safe_first]
-        for _gear in range(number_of_gears -1):
-            __next_gear = _next_gear(_current_gear, 0 if _gear <= (number_of_gears - 2) else 0.01)
-            _gears.update({f"Gear# {_gear}": __next_gear})
-            _current_gear = __next_gear
-        gear_ratios[surface_type] = gear_ratios[surface_type] + list(_gears.values())
     return gear_ratios
+
+def _gear_ratios(
+        surface_type: str
+        , _torque
+        , tire_size_in_inches
+        , maximum_contact_force
+        , number_of_gears
+        , rpm_redline
+) -> Dict[str, float]:
+    _gear_coefficient = 0.8
+    _torque_coefficient = 0.875
+    _gears: Dict = {i: 0.0 for i in range(1, number_of_gears + 1)}
+    _next_gear = lambda x, y: round(x * _gear_coefficient - y, 2)
+    _final_drive_ratio = 6.10
+    _peak_power = rpm_redline * 0.9
+    while next(reversed(_gears.values())) < 0.76:
+        _max_traction: float = maximum_contact_force / (_final_drive_ratio * _torque * _torque_coefficient)
+        _first_gear: float = round(_max_traction + surface_coefficients[surface_type], 2)
+        _gears[1] = _first_gear
+        wheel_rpm = round(rpm_redline / (_final_drive_ratio * _first_gear), 0)
+        _engine_rpm = round(wheel_rpm * _final_drive_ratio * _first_gear, 0)
+        # maximum_speed: int = math.floor(math.pi * tire_size_in_inches * wheel_rpm * inches_per_minute_to_miles_per_hour_conversion_ratio)
+        if _engine_rpm > rpm_redline:
+            _final_drive_ratio = _final_drive_ratio - 0.01 if _final_drive_ratio > 2.2 else 2.2
+            continue
+        else:
+            _current_gear = _gears[1]
+            for _gear_number in range(2, number_of_gears + 1):
+                _gear = _next_gear(_current_gear, 0 if _gear_number <= (number_of_gears - 2) else 0.01)
+                _gears.update({_gear_number: _gear})
+                _current_gear = _gear
+            if next(reversed(_gears.values())) < 0.76:
+                _final_drive_ratio = _final_drive_ratio - 0.01 if _final_drive_ratio > 2.2 else 2.2
+    _gears["Final Drive Ratio"] = round(_final_drive_ratio, 2)
+    return _gears
 
 
 if __name__ == '__main__':

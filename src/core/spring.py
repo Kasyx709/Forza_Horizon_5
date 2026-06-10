@@ -1,4 +1,4 @@
-from src.math.formulae import spring_formula, axle_mass, vehicle_mass, frequency_offset
+from src.formulae.formulae import spring_formula, axle_mass, vehicle_mass, frequency_offset
 
 spring_constant: float = 2.8875
 
